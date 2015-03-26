@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreatEchoWall", "GreatEchoWall\GreatEchoWall.csproj", "{1F8BAE59-D973-4760-BB95-EDE0647C1A77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelBuilder", "ExcelBuilder\ExcelBuilder.csproj", "{97E1551E-626C-453B-960B-37A7722913EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{1F8BAE59-D973-4760-BB95-EDE0647C1A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F8BAE59-D973-4760-BB95-EDE0647C1A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F8BAE59-D973-4760-BB95-EDE0647C1A77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97E1551E-626C-453B-960B-37A7722913EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97E1551E-626C-453B-960B-37A7722913EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97E1551E-626C-453B-960B-37A7722913EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97E1551E-626C-453B-960B-37A7722913EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
