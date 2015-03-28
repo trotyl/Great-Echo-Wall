@@ -24,5 +24,25 @@ namespace GreatEchoWall
         {
             InitializeComponent();
         }
+
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var box = sender as TextBox;
+            box.SelectAll();
+            box.PreviewMouseDown -= TextBox_PreviewMouseDown;
+        }
+
+        private void TextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var box = sender as TextBox;
+            box.Focus();
+            e.Handled = true;
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var box = sender as TextBox;
+            box.PreviewMouseDown += TextBox_PreviewMouseDown;
+        }
     }
 }

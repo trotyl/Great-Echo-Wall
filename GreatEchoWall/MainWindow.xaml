@@ -1,16 +1,67 @@
 ﻿<Window x:Class="GreatEchoWall.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525" MinWidth="300" MinHeight="300">
     <Grid>
-        <TabControl HorizontalAlignment="Left" Height="299" Margin="0,10,0,0" VerticalAlignment="Top" Width="507">
+        <TabControl Margin="0,10,0,0">
             <TabItem Header="服务器">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                </Grid>
             </TabItem>
             <TabItem Header="客户机">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                   
+                    <ScrollViewer Width="Auto" Margin="0,0,0,30">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <WrapPanel Grid.Row="0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <Label Content="环境名称：" Margin="0" />
+                                    <TextBox Width="180" TextAlignment="Center" Padding="0,4,0,0" MaxLength="100" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <Label Content="服务器IP地址：" Margin="0" />
+                                    <TextBox Width="100" Text="127.0.0.1" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <Label Content="服务器端口号：" Margin="0" />
+                                    <TextBox Width="42" Text="7" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <Label Content="协议类型：" Margin="0" />
+                                    <CheckBox Margin="0,6,0,0" />
+                                    <Label Content="TCP" Margin="0" />
+                                    <CheckBox Margin="0,6,0,0" />
+                                    <Label Content="UDP" Margin="0" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <Label Content="传输次数：" Margin="0" />
+                                    <TextBox Width="42" Text="100" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
+                                </StackPanel>
+                            </WrapPanel>
+                            <Grid Grid.Row="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Label Content="消息内容（采用UTF-8编码）：" />
+                                <TextBox Grid.Row="1" />
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+                    <Grid Height="28" VerticalAlignment="Bottom">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MaxWidth="80"></ColumnDefinition>
+                            <ColumnDefinition Width="*" MaxWidth="80"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="开始" Margin="0,0,10,0" />
+                        <Button Content="重置" Grid.Column="1" Margin="0,0,10,0" />
+                    </Grid>
+                </Grid>
             </TabItem>
         </TabControl>
-
     </Grid>
 </Window>
