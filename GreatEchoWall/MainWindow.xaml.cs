@@ -49,14 +49,39 @@ namespace GreatEchoWall
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            var name = nameBox.Text;
+            var name = string.IsNullOrEmpty(nameBox.Text) ? nameBox.Text : "未命名";
             var time = DateTime.Now.ToString("yyyyMMddHHmmss");
-            var remoteAddress = serverIpBox.Text;
-            var remotePort = serverPortBox.Text;
-            var message = messageBox.Text;
-            var times = timesBox.Text;
 
-            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), int.Parse(remotePort));
+            IPAddress remoteAddress;
+            if (!IPAddress.TryParse(serverIpBox.Text, out remoteAddress))
+            {
+                MessageBox.Show("服务器IP地址（" + serverIpBox.Text + "）不是有效的IP地址！");
+                return;
+            }
+
+            int remotePort;
+            if (!int.TryParse(serverPortBox.Text, out remotePort) || remotePort <= 0 || remotePort >= 65536)
+            {
+                MessageBox.Show("服务器端口号（" + serverPortBox.Text + "）不是有效的端口号！");
+                return;
+            }
+
+            if (!(tcpBox.IsChecked ?? false) && !(udpBox.IsChecked ?? false))
+            {
+                MessageBox.Show("未选择协议类型！");
+                return;
+            }
+
+            int times;
+            if (!int.TryParse(timesBox.Text, out times) || times <= 0 || times >= 65536)
+            {
+                MessageBox.Show("传输次数（" + timesBox.Text + "）非法！");
+                return;
+            }
+
+            var message = messageBox.Text;
+
+            IPEndPoint remoteEndPoint = new IPEndPoint(remoteAddress, remotePort);
             IPEndPoint localEndPoint;
 
             if (tcpBox.IsChecked ?? false)
@@ -68,7 +93,7 @@ namespace GreatEchoWall
             {
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             }
-            
+
         }
 
         private void resetButton_Click(object sender, RoutedEventArgs e)
