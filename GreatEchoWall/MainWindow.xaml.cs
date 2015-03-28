@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -43,6 +45,29 @@ namespace GreatEchoWall
         {
             var box = sender as TextBox;
             box.PreviewMouseDown += TextBox_PreviewMouseDown;
+        }
+
+        private void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            var name = nameBox.Text;
+            var time = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var remoteAddress = serverIpBox.Text;
+            var remotePort = serverPortBox.Text;
+            var times = timesBox.Text;
+
+            IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), int.Parse(remotePort));
+            IPEndPoint localEndPoint;
+
+            if (tcpBox.IsChecked ?? false)
+            {
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            }
+
+            if (udpBox.IsChecked ?? false)
+            {
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            }
+            
         }
     }
 }
