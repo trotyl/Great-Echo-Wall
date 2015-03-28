@@ -20,22 +20,20 @@
                             <WrapPanel Grid.Row="0">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="环境名称：" Margin="0" />
-                                    <TextBox Width="180" TextAlignment="Center" Padding="0,4,0,0" MaxLength="100" />
+                                    <TextBox x:Name="nameBox" Width="180" TextAlignment="Center" Padding="0,4,0,0" MaxLength="100" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="服务器IP地址：" Margin="0" />
-                                    <TextBox Width="100" Text="127.0.0.1" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" />
+                                    <TextBox x:Name="serverIpBox" Width="100" Text="127.0.0.1" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="服务器端口号：" Margin="0" />
-                                    <TextBox Width="42" Text="7" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
+                                    <TextBox x:Name="serverPortBox" Width="42" Text="7" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="协议类型：" Margin="0" />
-                                    <CheckBox Margin="0,6,0,0" />
-                                    <Label Content="TCP" Margin="0" />
-                                    <CheckBox Margin="0,6,0,0" />
-                                    <Label Content="UDP" Margin="0" />
+                                    <CheckBox Margin="0,6,8,0" IsChecked="True" Content="TCP" />
+                                    <CheckBox Margin="0,6,0,0" IsChecked="True" Content="UDP" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="传输次数：" Margin="0" />
