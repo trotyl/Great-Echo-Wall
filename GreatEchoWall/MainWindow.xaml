@@ -47,7 +47,13 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Label Content="消息内容（采用UTF-8编码）：" />
+                                <WrapPanel>
+                                    <Label Content="消息内容：" />
+                                    <CheckBox Content="随机内容" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,8,0" Padding="4,0,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+                                    <Label Content="长度："/>
+                                    <TextBox x:Name="lengthBox" Height="23" TextWrapping="Wrap" Text="1024" Width="80" Padding="0,3,0,0" TextAlignment="Center" IsEnabled="False"/>
+                                    <Label Content="Byte"/>
+                                </WrapPanel>
                                 <TextBox x:Name="messageBox" Grid.Row="1" />
                             </Grid>
                         </Grid>

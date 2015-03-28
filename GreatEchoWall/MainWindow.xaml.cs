@@ -106,5 +106,17 @@ namespace GreatEchoWall
             timesBox.Text = "100";
             messageBox.Text = "";
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            messageBox.IsEnabled = false;
+            lengthBox.IsEnabled = true;
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            messageBox.IsEnabled = true;
+            lengthBox.IsEnabled = false;
+        }
     }
 }
