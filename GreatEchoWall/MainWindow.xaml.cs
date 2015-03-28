@@ -53,6 +53,7 @@ namespace GreatEchoWall
             var time = DateTime.Now.ToString("yyyyMMddHHmmss");
             var remoteAddress = serverIpBox.Text;
             var remotePort = serverPortBox.Text;
+            var message = messageBox.Text;
             var times = timesBox.Text;
 
             IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), int.Parse(remotePort));
@@ -68,6 +69,17 @@ namespace GreatEchoWall
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             }
             
+        }
+
+        private void resetButton_Click(object sender, RoutedEventArgs e)
+        {
+            nameBox.Text = "";
+            serverIpBox.Text = "127.0.0.1";
+            serverPortBox.Text = "7";
+            tcpBox.IsChecked = true;
+            udpBox.IsChecked = true;
+            timesBox.Text = "100";
+            messageBox.Text = "";
         }
     }
 }

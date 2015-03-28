@@ -56,7 +56,7 @@
                             <ColumnDefinition Width="*" MaxWidth="80"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Button x:Name="startButton" Content="开始" Margin="0,0,10,0" Click="startButton_Click" />
-                        <Button x:Name="resetButton" Content="重置" Grid.Column="1" Margin="0,0,10,0" />
+                        <Button x:Name="resetButton" Content="重置" Grid.Column="1" Margin="0,0,10,0" Click="resetButton_Click" />
                     </Grid>
                 </Grid>
             </TabItem>
