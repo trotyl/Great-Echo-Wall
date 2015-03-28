@@ -32,12 +32,12 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="协议类型：" Margin="0" />
-                                    <CheckBox Margin="0,6,8,0" IsChecked="True" Content="TCP" />
-                                    <CheckBox Margin="0,6,0,0" IsChecked="True" Content="UDP" />
+                                    <CheckBox x:Name="tcpBox" Margin="0,6,8,0" IsChecked="True" Content="TCP" />
+                                    <CheckBox x:Name="udpBox" Margin="0,6,0,0" IsChecked="True" Content="UDP" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="传输次数：" Margin="0" />
-                                    <TextBox Width="42" Text="100" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
+                                    <TextBox x:Name="timesBox" Width="42" Text="100" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
                                 </StackPanel>
                             </WrapPanel>
                             <Grid Grid.Row="1">
@@ -46,7 +46,7 @@
                                     <RowDefinition Height="*"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Label Content="消息内容（采用UTF-8编码）：" />
-                                <TextBox Grid.Row="1" />
+                                <TextBox x:Name="messageBox" Grid.Row="1" />
                             </Grid>
                         </Grid>
                     </ScrollViewer>
