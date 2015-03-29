@@ -50,7 +50,7 @@ namespace GreatEchoWall
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
-            var name = string.IsNullOrEmpty(nameBox.Text) ? nameBox.Text : "未命名";
+            var name = string.IsNullOrEmpty(nameBox.Text) ? "未命名" : nameBox.Text;
             var time = DateTime.Now.ToString("yyyyMMddHHmmss");
 
             IPAddress remoteAddress;
@@ -82,7 +82,7 @@ namespace GreatEchoWall
 
             int length;
             string message, messageNotation;
-            if(!(isRandomBox.IsChecked ?? false))
+            if (!(isRandomBox.IsChecked ?? false))
             {
                 if (string.IsNullOrEmpty(messageBox.Text))
                 {
@@ -93,7 +93,7 @@ namespace GreatEchoWall
             }
             else
             {
-                if (!int.TryParse(lengthBox.Text, out length))
+                if (!int.TryParse(lengthBox.Text, out length) || length <= 0 || length >= 1048576)
                 {
                     MessageBox.Show("随机内容长度（" + lengthBox.Text + "）非法！");
                     return;
@@ -107,7 +107,17 @@ namespace GreatEchoWall
 
             if (tcpBox.IsChecked ?? false)
             {
-                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                try
+                {
+                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    localEndPoint = socket.LocalEndPoint as IPEndPoint;
+                    socket.BeginConnect(remoteEndPoint, TcpConnectOver, new { Socket = socket, Message = message, Buff = new byte[1048576] });
+                    Console.WriteLine("Connect Called!");
+                }
+                catch (Exception ee)
+                {
+                    MessageBox.Show(ee.Message);
+                }
             }
 
             if (udpBox.IsChecked ?? false)
@@ -117,15 +127,72 @@ namespace GreatEchoWall
 
         }
 
+        private void TcpConnectOver(IAsyncResult ar)
+        {
+            Console.WriteLine(ar.AsyncState);
+            var dic = ar.AsyncState as dynamic;
+            var socket = dic.Socket as Socket;
+            var message = dic.Message as string;
+            try
+            {
+                socket.EndConnect(ar);
+                var buff = Encoding.UTF8.GetBytes(message);
+                socket.BeginSend(buff, 0, buff.Length, SocketFlags.None, TcpSendOver, ar.AsyncState);
+                Console.WriteLine("Send Called!");
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
+
+        }
+
+        private void TcpSendOver(IAsyncResult ar)
+        {
+            var dic = ar.AsyncState as dynamic;
+            var socket = dic.Socket as Socket;
+            var buff = dic.Buff as byte[];
+            try
+            {
+                socket.EndSend(ar);
+                socket.BeginReceive(buff, 0, 1048576, SocketFlags.None, TcpRecvOver, ar.AsyncState);
+                Console.WriteLine("Receive Called!");
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
+        }
+
+        private void TcpRecvOver(IAsyncResult ar)
+        {
+            var dic = ar.AsyncState as dynamic;
+            var socket = dic.Socket as Socket;
+            var buff = dic.Buff as byte[];
+            try
+            {
+                var length = socket.EndReceive(ar);
+                socket.Close();
+                var res = Encoding.UTF8.GetString(buff, 0, length);
+                Console.WriteLine(length);
+                Console.WriteLine(res);
+                Console.WriteLine("Close Called!");
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
+        }
+
         private void resetButton_Click(object sender, RoutedEventArgs e)
         {
             nameBox.Text = "";
-            serverIpBox.Text = "127.0.0.1";
+            serverIpBox.Text = "58.96.191.131";
             serverPortBox.Text = "7";
             tcpBox.IsChecked = true;
             udpBox.IsChecked = true;
             timesBox.Text = "100";
-            messageBox.Text = "";
+            messageBox.Text = "This is a test message.";
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
