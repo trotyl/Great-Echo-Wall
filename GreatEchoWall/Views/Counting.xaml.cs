@@ -64,6 +64,10 @@ namespace GreatEchoWall.Views
             var context = lineChart.DataContext as dynamic;
             var tcps = context.TCP as List<KeyValuePair<int, long>>;
             tcps.Add(new KeyValuePair<int, long>(i + 1, delta));
+            if (tcps.Count > 20)
+            {
+                tcps.RemoveAt(0);
+            }
             lineChart.DataContext = null;
             lineChart.DataContext = context;
         }

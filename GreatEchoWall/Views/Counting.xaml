@@ -7,7 +7,7 @@
         <chartingToolkit:Chart  Name="lineChart" Title="Line Series Demo" >
             <chartingToolkit:Chart.Axes>
                 <chartingToolkit:CategoryAxis Orientation="X" SeriesHost="{x:Null}" Title="序号"/>
-                <chartingToolkit:LinearAxis Orientation="Y" SeriesHost="{x:Null}" Title="延时(ms)"/>
+                <chartingToolkit:LinearAxis Orientation="Y" SeriesHost="{x:Null}" Title="延时(100ns)"/>
             </chartingToolkit:Chart.Axes>
 
             <chartingToolkit:LineSeries x:Name="lineChartOne"  DependentValuePath="Value" IndependentValuePath="Key" ItemsSource="{Binding Path=TCP}" IsSelectionEnabled="True" Title="TCP"/>
