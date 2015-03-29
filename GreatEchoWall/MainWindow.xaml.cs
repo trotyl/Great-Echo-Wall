@@ -26,8 +26,6 @@ namespace GreatEchoWall
         public MainWindow()
         {
             InitializeComponent();
-            Counting loading = new Counting();
-            loading.Show();
         }
 
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -82,7 +80,27 @@ namespace GreatEchoWall
                 return;
             }
 
-            var message = messageBox.Text;
+            int length;
+            string message, messageNotation;
+            if(!(isRandomBox.IsChecked ?? false))
+            {
+                if (string.IsNullOrEmpty(messageBox.Text))
+                {
+                    MessageBox.Show("传输内容（" + messageBox.Text + "）为空！");
+                    return;
+                }
+                message = messageNotation = messageBox.Text;
+            }
+            else
+            {
+                if (!int.TryParse(lengthBox.Text, out length))
+                {
+                    MessageBox.Show("随机内容长度（" + lengthBox.Text + "）非法！");
+                    return;
+                }
+                message = new string('X', length);
+                messageNotation = "$Random$" + length.ToString();
+            }
 
             IPEndPoint remoteEndPoint = new IPEndPoint(remoteAddress, remotePort);
             IPEndPoint localEndPoint;
