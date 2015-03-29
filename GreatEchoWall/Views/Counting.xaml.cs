@@ -21,7 +21,7 @@ namespace GreatEchoWall.Views
     public partial class Counting : Window
     {
         public StateObject State { get; set; }
-        public delegate void UIDelegate(int i, long delta);
+        public delegate void UIDelegate(int i, long delta, double average);
 
         public Counting()
         {
@@ -43,23 +43,22 @@ namespace GreatEchoWall.Views
                     record.TcpMoments[i].SendStart = DateTime.Now;
                     socket.Send(sendBuff);
                     record.TcpMoments[i].SendEnd = DateTime.Now;
-                    Console.WriteLine(DateTime.Now.Ticks + " Send Over!");
                     var length = socket.Receive(recvBuff);
-                    Console.WriteLine(DateTime.Now.Ticks + " Receive Over!");
                     record.TcpMoments[i].RecvEnd = DateTime.Now;
                     var res = Encoding.UTF8.GetString(recvBuff, 0, length);
-                    Console.WriteLine(DateTime.Now.Ticks + " Res: " + res);
-                    window.Dispatcher.BeginInvoke(new UIDelegate(AddPoint), new object[] { i, record.TcpMoments[i].RecvEnd.Ticks - record.TcpMoments[i].SendEnd.Ticks });
+                    var tmp = record.TcpMoments;
+                    var average = record.TcpMoments.Where(x => x != null).Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                    window.Dispatcher.BeginInvoke(new UIDelegate(AddPoint), new object[] { i, record.TcpMoments[i].RecvEnd.Ticks - record.TcpMoments[i].SendEnd.Ticks, average });
                 }
                 catch (Exception ee)
                 {
-                    MessageBox.Show(ee.Message);
+                    Console.WriteLine(ee.Message);
                 }
             }
             socket.Close();
         }
 
-        private void AddPoint(int i, long delta)
+        private void AddPoint(int i, long delta, double average)
         {
             var context = lineChart.DataContext as dynamic;
             var tcps = context.TCP as List<KeyValuePair<int, long>>;
@@ -70,11 +69,14 @@ namespace GreatEchoWall.Views
             }
             lineChart.DataContext = null;
             lineChart.DataContext = context;
+
+            indexBlock.Text = (i + 1).ToString();
+            averageBlock.Text = average.ToString();
         }
 
         private void InitializeDataContext()
         {
-            lineChart.DataContext = new 
+            lineChart.DataContext = new
             {
                 TCP = new List<KeyValuePair<int, long>>(),
                 UDP = new List<KeyValuePair<int, long>>(),
