@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\StateObject.cs" />
     <Compile Include="Views\Counting.xaml.cs">
       <DependentUpon>Counting.xaml</DependentUpon>
     </Compile>

@@ -1,4 +1,5 @@
-﻿using GreatEchoWall.Views;
+﻿using GreatEchoWall.Models;
+using GreatEchoWall.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace GreatEchoWall
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Counting counting;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -52,6 +55,7 @@ namespace GreatEchoWall
         {
             var name = string.IsNullOrEmpty(nameBox.Text) ? "未命名" : nameBox.Text;
             var time = DateTime.Now.ToString("yyyyMMddHHmmss");
+            Console.WriteLine(DateTime.Now.Ticks + " Test Start!");
 
             IPAddress remoteAddress;
             if (!IPAddress.TryParse(serverIpBox.Text, out remoteAddress))
@@ -90,6 +94,7 @@ namespace GreatEchoWall
                     return;
                 }
                 message = messageNotation = messageBox.Text;
+                length = message.Length;
             }
             else
             {
@@ -103,16 +108,34 @@ namespace GreatEchoWall
             }
 
             IPEndPoint remoteEndPoint = new IPEndPoint(remoteAddress, remotePort);
-            IPEndPoint localEndPoint;
+
+            var state = new StateObject
+            {
+                Record = new Record
+                {
+                    Content = message,
+                    Length = length,
+                    Name = name,
+                    RemoteEndPoint = remoteEndPoint,
+                    TcpMoments = new Moment[times],
+                    Time = DateTime.Now,
+                    Times = times,
+                }
+            };
+
+            counting = new Counting();
+            counting.State = state;
+            counting.Show();
 
             if (tcpBox.IsChecked ?? false)
             {
                 try
                 {
                     var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    localEndPoint = socket.LocalEndPoint as IPEndPoint;
-                    socket.BeginConnect(remoteEndPoint, TcpConnectOver, new { Socket = socket, Message = message, Buff = new byte[1048576] });
-                    Console.WriteLine("Connect Called!");
+                    state.Socket = socket;
+                    socket.BeginConnect(remoteEndPoint, TcpConnectOver, state);
+                    state.Record.TcpConnectStart = DateTime.Now;
+                    Console.WriteLine(DateTime.Now.Ticks + " Connect Called!");
                 }
                 catch (Exception ee)
                 {
@@ -129,60 +152,88 @@ namespace GreatEchoWall
 
         private void TcpConnectOver(IAsyncResult ar)
         {
-            Console.WriteLine(ar.AsyncState);
-            var dic = ar.AsyncState as dynamic;
-            var socket = dic.Socket as Socket;
-            var message = dic.Message as string;
+            var now = DateTime.Now;
+            var state = ar.AsyncState as StateObject;
+            var socket = state.Socket;
+            var record = state.Record;
+            record.TcpConnectEnd = now;
             try
             {
                 socket.EndConnect(ar);
-                var buff = Encoding.UTF8.GetBytes(message);
-                socket.BeginSend(buff, 0, buff.Length, SocketFlags.None, TcpSendOver, ar.AsyncState);
-                Console.WriteLine("Send Called!");
             }
             catch (Exception ee)
             {
-                MessageBox.Show(ee.Message);
-            }
-
-        }
-
-        private void TcpSendOver(IAsyncResult ar)
-        {
-            var dic = ar.AsyncState as dynamic;
-            var socket = dic.Socket as Socket;
-            var buff = dic.Buff as byte[];
-            try
-            {
-                socket.EndSend(ar);
-                socket.BeginReceive(buff, 0, 1048576, SocketFlags.None, TcpRecvOver, ar.AsyncState);
-                Console.WriteLine("Receive Called!");
-            }
-            catch (Exception ee)
-            {
-                MessageBox.Show(ee.Message);
-            }
-        }
-
-        private void TcpRecvOver(IAsyncResult ar)
-        {
-            var dic = ar.AsyncState as dynamic;
-            var socket = dic.Socket as Socket;
-            var buff = dic.Buff as byte[];
-            try
-            {
-                var length = socket.EndReceive(ar);
+                Console.WriteLine(ee.Message);
                 socket.Close();
-                var res = Encoding.UTF8.GetString(buff, 0, length);
-                Console.WriteLine(length);
-                Console.WriteLine(res);
-                Console.WriteLine("Close Called!");
+                return;
             }
-            catch (Exception ee)
-            {
-                MessageBox.Show(ee.Message);
-            }
+
+            counting.Start();
+
+            //for (int i = 0; i < record.Times; i++)
+            //{
+            //    record.TcpMoments[i] = new Moment();
+            //    try
+            //    {
+            //        var sendBuff = Encoding.UTF8.GetBytes(record.Content);
+            //        var recvBuff = new byte[1048576];
+            //        record.TcpMoments[i].SendStart = DateTime.Now;
+            //        socket.Send(sendBuff);
+            //        record.TcpMoments[i].SendEnd = DateTime.Now;
+            //        Console.WriteLine(DateTime.Now.Ticks + " Send Over!");
+            //        var length = socket.Receive(recvBuff);
+            //        Console.WriteLine(DateTime.Now.Ticks + " Receive Over!");
+            //        record.TcpMoments[i].RecvEnd = DateTime.Now;
+            //        var res = Encoding.UTF8.GetString(recvBuff, 0, length);
+            //        Console.WriteLine(DateTime.Now.Ticks + " Res: " + res);
+            //    }
+            //    catch (Exception ee)
+            //    {
+            //        MessageBox.Show(ee.Message);
+            //    }
+            //}
+            //socket.Close();
         }
+
+        //private void TcpSendOver(IAsyncResult ar)
+        //{
+        //    var dic = ar.AsyncState as dynamic;
+        //    var socket = dic.Socket as Socket;
+        //    var buff = dic.Buff as byte[];
+        //    try
+        //    {
+        //        socket.EndSend(ar);
+        //        socket.BeginReceive(buff, 0, 1048576, SocketFlags.None, TcpRecvOver, ar.AsyncState);
+        //        Console.WriteLine("Receive Called!");
+        //    }
+        //    catch (Exception ee)
+        //    {
+        //        MessageBox.Show(ee.Message);
+        //    }
+        //}
+
+        //private void TcpRecvOver(IAsyncResult ar)
+        //{
+        //    var dic = ar.AsyncState as dynamic;
+        //    var socket = dic.Socket as Socket;
+        //    var buff = dic.Buff as byte[];
+        //    var tick = dic.Tick as long?;
+        //    try
+        //    {
+        //        var length = socket.EndReceive(ar);
+        //        socket.Close();
+        //        var res = Encoding.UTF8.GetString(buff, 0, length);
+        //        Console.WriteLine(length);
+        //        Console.WriteLine(res);
+        //        var newtick = DateTime.Now.Ticks;
+        //        Console.WriteLine(newtick - tick);
+        //        Console.WriteLine("Close Called!");
+        //    }
+        //    catch (Exception ee)
+        //    {
+        //        MessageBox.Show(ee.Message);
+        //    }
+        //}
 
         private void resetButton_Click(object sender, RoutedEventArgs e)
         {
