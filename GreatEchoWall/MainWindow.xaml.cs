@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GreatEchoWall.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -25,6 +26,8 @@ namespace GreatEchoWall
         public MainWindow()
         {
             InitializeComponent();
+            Counting loading = new Counting();
+            loading.Show();
         }
 
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)

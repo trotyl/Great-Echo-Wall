@@ -22,6 +22,28 @@ namespace GreatEchoWall.Views
         public Counting()
         {
             InitializeComponent();
+            testc();
+        }
+
+        private void testc()
+        {
+            lineChart.DataContext = new 
+            {
+                TCP = new List<KeyValuePair<int, int>>
+                {
+                    new KeyValuePair<int, int>(1, 1),
+                    new KeyValuePair<int, int>(2, 3),
+                    new KeyValuePair<int, int>(3, 2),
+                    new KeyValuePair<int, int>(4, 4),
+                },
+                UDP = new List<KeyValuePair<int, int>>
+                {
+                    new KeyValuePair<int, int>(1, 3),
+                    new KeyValuePair<int, int>(2, 2),
+                    new KeyValuePair<int, int>(3, 4),
+                    new KeyValuePair<int, int>(4, 1),
+                }
+            };
         }
     }
 }

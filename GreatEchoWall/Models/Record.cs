@@ -12,6 +12,7 @@ namespace GreatEchoWall.Models
         public string Name { get; set; }
         public DateTime Time { get; set; }
         public string Content { get; set; }
+        public int Length { get; set; }
         public int Times { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint remoteEndPoint { get; set; }
