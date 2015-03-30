@@ -9,7 +9,8 @@ namespace GreatEchoWall.Models
 {
     public class StateObject
     {
-        public Socket Socket { get; set; }
+        public Socket TcpSocket { get; set; }
+        public Socket UdpSocket { get; set; }
         public Record Record { get; set; }
     }
 }

@@ -4,7 +4,7 @@
         xmlns:chartingToolkit="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit" x:Name="window" x:Class="GreatEchoWall.Views.Counting"
         Title="Counting" Height="400" Width="600">
     <Grid>
-        <chartingToolkit:Chart  Name="lineChart" Title="Line Series Demo" Margin="0,0,0,48" >
+        <chartingToolkit:Chart  Name="lineChart" Title="延迟测试结果" Margin="0,0,0,48" >
             <chartingToolkit:Chart.Axes>
                 <chartingToolkit:CategoryAxis Orientation="X" SeriesHost="{x:Null}" Title="序号"/>
                 <chartingToolkit:LinearAxis Orientation="Y" SeriesHost="{x:Null}" Title="延时(100ns)"/>
@@ -14,11 +14,18 @@
             <chartingToolkit:LineSeries x:Name="lineChartTwo"  DependentValuePath="Value" IndependentValuePath="Key" ItemsSource="{Binding Path=UDP}" IsSelectionEnabled="True" Title="UDP"/>
         </chartingToolkit:Chart>
         <Grid Height="40" VerticalAlignment="Bottom" >
-            <StackPanel Orientation="Horizontal" Height="24" HorizontalAlignment="Center">
-                <Label Content="次数：" />
-                <TextBlock x:Name="indexBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
+            <StackPanel Orientation="Horizontal" Height="24" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <Label Content="TCP  次数：" />
+                <TextBlock x:Name="tcpIndexBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
                 <Label Content="平均值：" Margin="10,0,0,0" />
-                <TextBlock x:Name="averageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
+                <TextBlock x:Name="tcpAverageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
+                <Label Content="（100nm）：" Margin="10,0,0,0" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Height="24" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,18,0,0">
+                <Label Content="UDP  次数：" />
+                <TextBlock x:Name="udpIndexBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
+                <Label Content="平均值：" Margin="10,0,0,0" />
+                <TextBlock x:Name="udpAverageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
                 <Label Content="（100nm）：" Margin="10,0,0,0" />
             </StackPanel>
         </Grid>

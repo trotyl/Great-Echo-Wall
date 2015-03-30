@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -118,87 +119,80 @@ namespace GreatEchoWall
                     Name = name,
                     RemoteEndPoint = remoteEndPoint,
                     TcpMoments = new Moment[times],
+                    UdpMoments = new Moment[times],
                     Time = DateTime.Now,
                     Times = times,
                 }
             };
 
-            counting = new Counting();
-            counting.State = state;
-            counting.Show();
-
             if (tcpBox.IsChecked ?? false)
             {
-                try
-                {
-                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    state.Socket = socket;
-                    socket.BeginConnect(remoteEndPoint, TcpConnectOver, state);
-                    state.Record.TcpConnectStart = DateTime.Now;
-                    Console.WriteLine(DateTime.Now.Ticks + " Connect Called!");
-                }
-                catch (Exception ee)
-                {
-                    MessageBox.Show(ee.Message);
-                }
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                state.TcpSocket = socket;
             }
 
             if (udpBox.IsChecked ?? false)
             {
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                state.UdpSocket = socket;
             }
 
+            counting = new Counting();
+            counting.State = state;
+            counting.Show();
+            Thread bg = new Thread(counting.Start);
+            bg.Start();
         }
 
-        private void TcpConnectOver(IAsyncResult ar)
-        {
-            var now = DateTime.Now;
-            var state = ar.AsyncState as StateObject;
-            var socket = state.Socket;
-            var record = state.Record;
-            record.TcpConnectEnd = now;
-            try
-            {
-                socket.EndConnect(ar);
-            }
-            catch (Exception ee)
-            {
-                Console.WriteLine(ee.Message);
-                socket.Close();
-                return;
-            }
+        //private void ConnectOver(IAsyncResult ar)
+        //{
+        //    var now = DateTime.Now;
+        //    var state = ar.AsyncState as StateObject;
+        //    var socket = state.TcpSocket;
+        //    var record = state.Record;
+        //    record.TcpConnectEnd = now;
+        //    try
+        //    {
+        //        socket.EndConnect(ar);
+        //    }
+        //    catch (Exception ee)
+        //    {
+        //        Console.WriteLine(ee.Message);
+        //        socket.Close();
+        //        return;
+        //    }
 
-            counting.Start();
+        //    counting.Start();
 
-            //for (int i = 0; i < record.Times; i++)
-            //{
-            //    record.TcpMoments[i] = new Moment();
-            //    try
-            //    {
-            //        var sendBuff = Encoding.UTF8.GetBytes(record.Content);
-            //        var recvBuff = new byte[1048576];
-            //        record.TcpMoments[i].SendStart = DateTime.Now;
-            //        socket.Send(sendBuff);
-            //        record.TcpMoments[i].SendEnd = DateTime.Now;
-            //        Console.WriteLine(DateTime.Now.Ticks + " Send Over!");
-            //        var length = socket.Receive(recvBuff);
-            //        Console.WriteLine(DateTime.Now.Ticks + " Receive Over!");
-            //        record.TcpMoments[i].RecvEnd = DateTime.Now;
-            //        var res = Encoding.UTF8.GetString(recvBuff, 0, length);
-            //        Console.WriteLine(DateTime.Now.Ticks + " Res: " + res);
-            //    }
-            //    catch (Exception ee)
-            //    {
-            //        MessageBox.Show(ee.Message);
-            //    }
-            //}
-            //socket.Close();
-        }
+        //    //for (int i = 0; i < record.Times; i++)
+        //    //{
+        //    //    record.TcpMoments[i] = new Moment();
+        //    //    try
+        //    //    {
+        //    //        var sendBuff = Encoding.UTF8.GetBytes(record.Content);
+        //    //        var recvBuff = new byte[1048576];
+        //    //        record.TcpMoments[i].SendStart = DateTime.Now;
+        //    //        socket.Send(sendBuff);
+        //    //        record.TcpMoments[i].SendEnd = DateTime.Now;
+        //    //        Console.WriteLine(DateTime.Now.Ticks + " Send Over!");
+        //    //        var length = socket.Receive(recvBuff);
+        //    //        Console.WriteLine(DateTime.Now.Ticks + " Receive Over!");
+        //    //        record.TcpMoments[i].RecvEnd = DateTime.Now;
+        //    //        var res = Encoding.UTF8.GetString(recvBuff, 0, length);
+        //    //        Console.WriteLine(DateTime.Now.Ticks + " Res: " + res);
+        //    //    }
+        //    //    catch (Exception ee)
+        //    //    {
+        //    //        MessageBox.Show(ee.Message);
+        //    //    }
+        //    //}
+        //    //socket.Close();
+        //}
 
         //private void TcpSendOver(IAsyncResult ar)
         //{
         //    var dic = ar.AsyncState as dynamic;
-        //    var socket = dic.Socket as Socket;
+        //    var socket = dic.TcpSocket as TcpSocket;
         //    var buff = dic.Buff as byte[];
         //    try
         //    {
@@ -215,7 +209,7 @@ namespace GreatEchoWall
         //private void TcpRecvOver(IAsyncResult ar)
         //{
         //    var dic = ar.AsyncState as dynamic;
-        //    var socket = dic.Socket as Socket;
+        //    var socket = dic.TcpSocket as TcpSocket;
         //    var buff = dic.Buff as byte[];
         //    var tick = dic.Tick as long?;
         //    try

@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,34 +23,131 @@ namespace GreatEchoWall.Views
     public partial class Counting : Window
     {
         public StateObject State { get; set; }
-        public delegate void UIDelegate(int i, long delta, double average);
+        private Timer aTimer { get; set; }
+        public delegate void UIDelegate(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage);
 
         public Counting()
         {
             InitializeComponent();
             InitializeDataContext();
+
+            aTimer = new Timer(1000);
+            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            aTimer.Start();
+        }
+
+        private void OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            IEnumerable<KeyValuePair<int, long>> tcpPoints, udpPoints;
+            double tcpAverage, udpAverage;
+
+            var tcpMoments = State.Record.TcpMoments.Where(x => x != null);
+            var tcpCount = tcpMoments.Count();
+            if (tcpCount != 0)
+            {
+                var tcpRange = tcpMoments.Skip(tcpCount <= 20 ? 0 : tcpCount - 20);
+                var tcpDeltas = tcpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                tcpAverage = tcpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                tcpPoints = tcpDeltas.Select((x, i) => new KeyValuePair<int, long>((tcpCount < 20 ? 0 : tcpCount - 20) + i + 1, x));
+            }
+            else
+            {
+                tcpPoints = new KeyValuePair<int, long>[] { };
+                tcpAverage = -1;
+            }
+
+            var udpMoments = State.Record.UdpMoments.Where(x => x != null);
+            var udpCount = udpMoments.Count();
+            if (udpCount != 0)
+            {
+                var udpRange = udpMoments.Skip(udpCount <= 20 ? 0 : udpCount - 20);
+                var udpDeltas = udpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                udpAverage = udpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                udpPoints = udpDeltas.Select((x, i) => new KeyValuePair<int, long>((udpCount < 20 ? 0 : udpCount - 20) + i + 1, x));
+            }
+            else
+            {
+                udpPoints = new KeyValuePair<int, long>[] { };
+                udpAverage = -1;
+            }
+            window.Dispatcher.BeginInvoke(new UIDelegate(UpdatePoint), new object[] { "Tcp", tcpPoints, udpPoints, tcpCount, udpCount, tcpAverage, udpAverage});
         }
 
         public void Start()
         {
-            var socket = State.Socket;
+            var tcp = State.TcpSocket;
+            var udp = State.UdpSocket;
             var record = State.Record;
+            if (tcp != null)
+            {
+                tcp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Tcp");
+                record.TcpConnectStart = DateTime.Now;
+            }
+            if (udp != null)
+            {
+                udp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Udp");
+                record.UdpConnectStart = DateTime.Now;
+            }
+        }
+
+        private void ConnectOver(IAsyncResult ar)
+        {
+            var now = DateTime.Now;
+            var record = State.Record;
+            Socket socket;
+            if (ar.AsyncState as string == "Tcp")
+            {
+                socket = State.TcpSocket;
+                record.TcpConnectEnd = now;
+            }
+            else
+            {
+                socket = State.UdpSocket;
+                record.UdpConnectEnd = now;
+            }
+            try
+            {
+                socket.EndConnect(ar);
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+                socket.Close();
+                return;
+            }
+            Looping(ar.AsyncState as string);
+        }
+
+        private void Looping(string protocol)
+        {
+            var record = State.Record;
+            Socket socket;
+            if (protocol == "Tcp")
+            {
+                socket = State.TcpSocket;
+            }
+            else
+            {
+                socket = State.UdpSocket;
+            }
+
+            var recvBuff = new byte[1048576];
+            
             for (int i = 0; i < record.Times; i++)
             {
-                record.TcpMoments[i] = new Moment();
+                var moment = new Moment();
                 try
                 {
                     var sendBuff = Encoding.UTF8.GetBytes(record.Content);
-                    var recvBuff = new byte[1048576];
-                    record.TcpMoments[i].SendStart = DateTime.Now;
+                    moment.SendStart = DateTime.Now;
                     socket.Send(sendBuff);
-                    record.TcpMoments[i].SendEnd = DateTime.Now;
+                    moment.SendEnd = DateTime.Now;
                     var length = socket.Receive(recvBuff);
-                    record.TcpMoments[i].RecvEnd = DateTime.Now;
+                    moment.RecvEnd = DateTime.Now;
                     var res = Encoding.UTF8.GetString(recvBuff, 0, length);
-                    var tmp = record.TcpMoments;
-                    var average = record.TcpMoments.Where(x => x != null).Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
-                    window.Dispatcher.BeginInvoke(new UIDelegate(AddPoint), new object[] { i, record.TcpMoments[i].RecvEnd.Ticks - record.TcpMoments[i].SendEnd.Ticks, average });
+                    var moments = (protocol == "Tcp" ? record.TcpMoments : record.UdpMoments);
+                    moments[i] = moment;
+                    Console.WriteLine(sendBuff.Length + " " + length);
                 }
                 catch (Exception ee)
                 {
@@ -56,22 +155,22 @@ namespace GreatEchoWall.Views
                 }
             }
             socket.Close();
+            aTimer.Stop();
+            aTimer.Dispose();
+            OnTimedEvent(null, null);
         }
 
-        private void AddPoint(int i, long delta, double average)
+        private void UpdatePoint(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage)
         {
-            var context = lineChart.DataContext as dynamic;
-            var tcps = context.TCP as List<KeyValuePair<int, long>>;
-            tcps.Add(new KeyValuePair<int, long>(i + 1, delta));
-            if (tcps.Count > 20)
+            lineChart.DataContext = new
             {
-                tcps.RemoveAt(0);
-            }
-            lineChart.DataContext = null;
-            lineChart.DataContext = context;
-
-            indexBlock.Text = (i + 1).ToString();
-            averageBlock.Text = average.ToString();
+                TCP = tcpPoints,
+                UDP = udpPoints,
+            };
+            tcpIndexBlock.Text = tcpIndex.ToString();
+            udpIndexBlock.Text = udpIndex.ToString();
+            tcpAverageBlock.Text = tcpAverage.ToString();
+            udpAverageBlock.Text = udpAverage.ToString();
         }
 
         private void InitializeDataContext()
