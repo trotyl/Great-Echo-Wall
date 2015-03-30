@@ -16,8 +16,6 @@ namespace GreatEchoWall.Models
         public int Times { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
-        //public bool IsTcpEnabled { get; set; }
-        //public bool IsUdpEnabled { get; set; }
         public int RouteCount { get; set; }
         public string RouteLog { get; set; }
         public DateTime TcpConnectStart { get; set; }

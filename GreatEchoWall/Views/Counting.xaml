@@ -19,14 +19,14 @@
                 <TextBlock x:Name="tcpIndexBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
                 <Label Content="平均值：" Margin="10,0,0,0" />
                 <TextBlock x:Name="tcpAverageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
-                <Label Content="（100nm）：" Margin="10,0,0,0" />
+                <Label Content="（100nm）" Margin="10,0,0,0" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Height="24" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,18,0,0">
                 <Label Content="UDP  次数：" />
                 <TextBlock x:Name="udpIndexBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
                 <Label Content="平均值：" Margin="10,0,0,0" />
                 <TextBlock x:Name="udpAverageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
-                <Label Content="（100nm）：" Margin="10,0,0,0" />
+                <Label Content="（100nm）" Margin="10,0,0,0" />
             </StackPanel>
         </Grid>
     </Grid>

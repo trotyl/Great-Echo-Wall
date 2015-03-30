@@ -1,7 +1,9 @@
-﻿using GreatEchoWall.Models;
+﻿using GreatEchoWall.Helpers;
+using GreatEchoWall.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,7 +50,7 @@ namespace GreatEchoWall.Views
                 var tcpRange = tcpMoments.Skip(tcpCount <= 20 ? 0 : tcpCount - 20);
                 var tcpDeltas = tcpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
                 tcpAverage = tcpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
-                tcpPoints = tcpDeltas.Select((x, i) => new KeyValuePair<int, long>((tcpCount < 20 ? 0 : tcpCount - 20) + i + 1, x));
+                tcpPoints = tcpDeltas.Select((x, i) => new KeyValuePair<int, long>((tcpCount <= 20 ? 0 : tcpCount - 20) + i + 1, x));
             }
             else
             {
@@ -63,7 +65,7 @@ namespace GreatEchoWall.Views
                 var udpRange = udpMoments.Skip(udpCount <= 20 ? 0 : udpCount - 20);
                 var udpDeltas = udpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
                 udpAverage = udpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
-                udpPoints = udpDeltas.Select((x, i) => new KeyValuePair<int, long>((udpCount < 20 ? 0 : udpCount - 20) + i + 1, x));
+                udpPoints = udpDeltas.Select((x, i) => new KeyValuePair<int, long>((udpCount <= 20 ? 0 : udpCount - 20) + i + 1, x));
             }
             else
             {
@@ -71,6 +73,17 @@ namespace GreatEchoWall.Views
                 udpAverage = -1;
             }
             window.Dispatcher.BeginInvoke(new UIDelegate(UpdatePoint), new object[] { "Tcp", tcpPoints, udpPoints, tcpCount, udpCount, tcpAverage, udpAverage});
+
+            if (tcpCount == State.Record.Times || udpCount == State.Record.Times)
+            {
+                Storage.save(State.Record);
+            }
+
+            if (tcpCount == State.Record.Times && udpCount == State.Record.Times)
+            {
+                aTimer.Stop();
+                aTimer.Dispose();
+            }
         }
 
         public void Start()
@@ -105,6 +118,8 @@ namespace GreatEchoWall.Views
                 socket = State.UdpSocket;
                 record.UdpConnectEnd = now;
             }
+            record.LocalEndPoint = socket.LocalEndPoint as IPEndPoint;
+
             try
             {
                 socket.EndConnect(ar);
@@ -147,17 +162,17 @@ namespace GreatEchoWall.Views
                     var res = Encoding.UTF8.GetString(recvBuff, 0, length);
                     var moments = (protocol == "Tcp" ? record.TcpMoments : record.UdpMoments);
                     moments[i] = moment;
-                    Console.WriteLine(sendBuff.Length + " " + length);
+                    Console.WriteLine(moment.SendEnd.Ticks);
+                    Console.WriteLine(moment.RecvEnd.Ticks);
                 }
                 catch (Exception ee)
                 {
                     Console.WriteLine(ee.Message);
                 }
             }
+            record.TcpCloseStart = DateTime.Now;
             socket.Close();
-            aTimer.Stop();
-            aTimer.Dispose();
-            OnTimedEvent(null, null);
+            record.TcpConnectEnd = DateTime.Now;
         }
 
         private void UpdatePoint(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage)
@@ -169,8 +184,8 @@ namespace GreatEchoWall.Views
             };
             tcpIndexBlock.Text = tcpIndex.ToString();
             udpIndexBlock.Text = udpIndex.ToString();
-            tcpAverageBlock.Text = tcpAverage.ToString();
-            udpAverageBlock.Text = udpAverage.ToString();
+            tcpAverageBlock.Text = tcpAverage.ToString("f2");
+            udpAverageBlock.Text = udpAverage.ToString("f2");
         }
 
         private void InitializeDataContext()

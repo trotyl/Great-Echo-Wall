@@ -27,7 +27,7 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="服务器IP地址：" Margin="0" />
-                                    <TextBox x:Name="serverIpBox" Width="100" Text="58.96.191.131" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" />
+                                    <TextBox x:Name="serverIpBox" Width="100" Text="127.0.0.1" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
                                     <Label Content="服务器端口号：" Margin="0" />
