@@ -162,8 +162,6 @@ namespace GreatEchoWall.Views
                     var res = Encoding.UTF8.GetString(recvBuff, 0, length);
                     var moments = (protocol == "Tcp" ? record.TcpMoments : record.UdpMoments);
                     moments[i] = moment;
-                    Console.WriteLine(moment.SendEnd.Ticks);
-                    Console.WriteLine(moment.RecvEnd.Ticks);
                 }
                 catch (Exception ee)
                 {

@@ -9,7 +9,9 @@
     <Grid>
         <TabControl Margin="0,10,0,0">
             <TabItem Header="服务器">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    
+                </Grid>
             </TabItem>
             <TabItem Header="客户机">
                 <Grid Background="#FFE5E5E5">

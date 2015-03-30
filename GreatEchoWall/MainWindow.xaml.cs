@@ -2,6 +2,8 @@
 using GreatEchoWall.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -118,6 +120,8 @@ namespace GreatEchoWall
                     Length = length,
                     Name = name,
                     RemoteEndPoint = remoteEndPoint,
+                    RouteCount = 0,
+                    RouteLog = "",
                     TcpMoments = new Moment[times],
                     UdpMoments = new Moment[times],
                     Time = DateTime.Now,
@@ -142,6 +146,27 @@ namespace GreatEchoWall
             counting.Show();
             Thread bg = new Thread(counting.Start);
             bg.Start();
+
+            //ProcessStartInfo start = new ProcessStartInfo("Tracert.exe");
+            //start.Arguments = serverIpBox.Text;
+            //start.CreateNoWindow = true;
+            //start.RedirectStandardOutput = true;
+            //start.RedirectStandardInput = true;
+            //start.UseShellExecute = false;
+            //Process p = Process.Start(start);
+            //StreamReader reader = p.StandardOutput;
+            //string line;
+            //while (!reader.EndOfStream)
+            //{
+            //    line = reader.ReadLine();
+            //    state.Record.RouteCount += 1;
+            //    state.Record.RouteLog += line + "\n";
+            //}
+            //state.Record.RouteCount -= 6;
+            //Console.WriteLine(state.Record.RouteLog);
+            //p.WaitForExit();
+            //p.Close();
+            //reader.Close();
         }
 
         private void resetButton_Click(object sender, RoutedEventArgs e)
