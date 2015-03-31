@@ -40,8 +40,8 @@
                                     <TextBox x:Name="sStateBox" Width="100" Text="未开启" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" IsEnabled="False" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,20,10,0" Height="32">
-                                    <Button x:Name="sStartButton" Content="开启" Width="75" Margin="10,0,0,0"/>
-                                    <Button x:Name="sStopButton" Content="停止" Width="75" Margin="10,0,0,0"/>
+                                    <Button x:Name="sStartButton" Content="开启" Width="75" Margin="10,0,0,0" Click="sStartButton_Click"/>
+                                    <Button x:Name="sStopButton" Content="停止" Width="75" Margin="10,0,0,0" Click="sStopButton_Click"/>
                                 </StackPanel>
                             </StackPanel>
                            

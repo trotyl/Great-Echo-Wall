@@ -28,8 +28,9 @@ namespace GreatEchoWall
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Counting counting;
-        private long Frequency;
+        private long frequency;
+        private Thread tcpServer;
+        private Thread udpServer;
 
         [DllImport("kernel32.dll")]
         private extern static bool QueryPerformanceFrequency(ref long x);
@@ -40,7 +41,7 @@ namespace GreatEchoWall
 
             long freq = -1;
             QueryPerformanceFrequency(ref freq);
-            Frequency = freq;
+            frequency = freq;
         }
 
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -62,6 +63,19 @@ namespace GreatEchoWall
             var box = sender as TextBox;
             box.PreviewMouseDown += TextBox_PreviewMouseDown;
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            messageBox.IsEnabled = false;
+            lengthBox.IsEnabled = true;
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            messageBox.IsEnabled = true;
+            lengthBox.IsEnabled = false;
+        }
+
 
         private void startButton_Click(object sender, RoutedEventArgs e)
         {
@@ -135,7 +149,7 @@ namespace GreatEchoWall
                     UdpMoments = new Moment[times],
                     Time = DateTime.Now,
                     Times = times,
-                    Frequency = Frequency,
+                    Frequency = frequency,
                 }
             };
 
@@ -144,14 +158,13 @@ namespace GreatEchoWall
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 state.TcpSocket = socket;
             }
-
             if (udpBox.IsChecked ?? false)
             {
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 state.UdpSocket = socket;
             }
 
-            counting = new Counting();
+            var counting = new Counting();
             counting.State = state;
             counting.Show();
             Thread chartThread = new Thread(counting.Start);
@@ -174,16 +187,81 @@ namespace GreatEchoWall
             messageBox.Text = "This is a test message.";
         }
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void sStartButton_Click(object sender, RoutedEventArgs e)
         {
-            messageBox.IsEnabled = false;
-            lengthBox.IsEnabled = true;
+            var name = string.IsNullOrEmpty(sNameBox.Text) ? "未命名" : sNameBox.Text;
+            var time = DateTime.Now.ToString("yyyyMMddHHmmss");
+            Console.WriteLine(DateTime.Now.Ticks + " Server Start!");
+
+            int port;
+            if (!int.TryParse(sPortBox.Text, out port) || port <= 0 || port >= 65536)
+            {
+                MessageBox.Show("服务器端口号（" + sPortBox.Text + "）不是有效的端口号！");
+                return;
+            }
+
+            if (!(tcpBox.IsChecked ?? false) && !(udpBox.IsChecked ?? false))
+            {
+                MessageBox.Show("未选择协议类型！");
+                return;
+            }
+
+            int max;
+            if (!int.TryParse(sMaxBox.Text, out max) || max <= 0 || max >= 1000)
+            {
+                MessageBox.Show("传输次数（" + sMaxBox.Text + "）非法！");
+                return;
+            }
+
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
+
+            if (tcpBox.IsChecked ?? false)
+            {
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                socket.Bind(endPoint);
+                tcpServer = new Thread(StartServer);
+                tcpServer.IsBackground = true;
+                tcpServer.Start(socket);
+            }
+            if (udpBox.IsChecked ?? false)
+            {
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                socket.Bind(endPoint);
+                udpServer = new Thread(StartServer);
+                udpServer.IsBackground = true;
+                udpServer.Start(socket);
+            }
+
+            sStateBox.Text = "已开启";
         }
 
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void sStopButton_Click(object sender, RoutedEventArgs e)
         {
-            messageBox.IsEnabled = true;
-            lengthBox.IsEnabled = false;
+            try
+            {
+                tcpServer.Abort();
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
+
+            try
+            {
+                udpServer.Abort();
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
+
+            sStateBox.Text = "未开启";
         }
+
+        private void StartServer(object socket)
+        {
+            throw new NotImplementedException();
+        }
+        
     }
 }
