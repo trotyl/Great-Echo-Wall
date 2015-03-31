@@ -2,9 +2,12 @@
 using GreatEchoWall.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -26,7 +29,11 @@ namespace GreatEchoWall.Views
     {
         public StateObject State { get; set; }
         private Timer aTimer { get; set; }
-        public delegate void UIDelegate(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage);
+        private Process routeProcess { get; set; }
+        public delegate void UIDelegate(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage, int routeCount, string routeLog);
+
+        [DllImport("kernel32.dll")]
+        private extern static bool QueryPerformanceCounter(ref long x);
 
         public Counting()
         {
@@ -36,6 +43,36 @@ namespace GreatEchoWall.Views
             aTimer = new Timer(1000);
             aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             aTimer.Start();
+        }
+
+        public void Route()
+        {
+            ProcessStartInfo start = new ProcessStartInfo("Tracert.exe");
+            start.Arguments = State.Record.RemoteEndPoint.Address.ToString();
+            start.CreateNoWindow = true;
+            start.RedirectStandardOutput = true;
+            start.RedirectStandardInput = true;
+            start.UseShellExecute = false;
+            routeProcess = Process.Start(start);
+            StreamReader reader = routeProcess.StandardOutput;
+            string line;
+            State.Record.RouteCount = -6;
+            try
+            {
+                while (!reader.EndOfStream)
+                {
+                    line = reader.ReadLine();
+                    State.Record.RouteCount += 1;
+                    State.Record.RouteLog += line + "\n";
+                }
+                routeProcess.WaitForExit();
+                routeProcess.Close();
+                reader.Close();
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
         }
 
         private void OnTimedEvent(object sender, ElapsedEventArgs e)
@@ -48,8 +85,8 @@ namespace GreatEchoWall.Views
             if (tcpCount != 0)
             {
                 var tcpRange = tcpMoments.Skip(tcpCount <= 20 ? 0 : tcpCount - 20);
-                var tcpDeltas = tcpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
-                tcpAverage = tcpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                var tcpDeltas = tcpRange.Select(x => x.RecvEnd - x.SendEnd).Select(x => x * 1000000 / State.Record.Frequency);
+                tcpAverage = tcpMoments.Average(x => x.RecvEnd - x.SendEnd) * 1000000 / State.Record.Frequency;
                 tcpPoints = tcpDeltas.Select((x, i) => new KeyValuePair<int, long>((tcpCount <= 20 ? 0 : tcpCount - 20) + i + 1, x));
             }
             else
@@ -63,8 +100,8 @@ namespace GreatEchoWall.Views
             if (udpCount != 0)
             {
                 var udpRange = udpMoments.Skip(udpCount <= 20 ? 0 : udpCount - 20);
-                var udpDeltas = udpRange.Select(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
-                udpAverage = udpMoments.Average(x => x.RecvEnd.Ticks - x.SendEnd.Ticks);
+                var udpDeltas = udpRange.Select(x => x.RecvEnd - x.SendEnd).Select(x => x * 1000000 / State.Record.Frequency);
+                udpAverage = udpMoments.Average(x => x.RecvEnd - x.SendEnd) * 1000000 / State.Record.Frequency;
                 udpPoints = udpDeltas.Select((x, i) => new KeyValuePair<int, long>((udpCount <= 20 ? 0 : udpCount - 20) + i + 1, x));
             }
             else
@@ -72,14 +109,18 @@ namespace GreatEchoWall.Views
                 udpPoints = new KeyValuePair<int, long>[] { };
                 udpAverage = -1;
             }
-            window.Dispatcher.BeginInvoke(new UIDelegate(UpdatePoint), new object[] { "Tcp", tcpPoints, udpPoints, tcpCount, udpCount, tcpAverage, udpAverage});
 
-            if (tcpCount == State.Record.Times || udpCount == State.Record.Times)
+            var routeCount = State.Record.RouteCount;
+            var routeLog = State.Record.RouteLog;
+
+            window.Dispatcher.BeginInvoke(new UIDelegate(UpdatePoint), new object[] { "Tcp", tcpPoints, udpPoints, tcpCount, udpCount, tcpAverage, udpAverage, routeCount, routeLog});
+
+            if (tcpCount == State.Record.Times || udpCount == State.Record.Times || routeCount > 0)
             {
                 Storage.save(State.Record);
             }
 
-            if (tcpCount == State.Record.Times && udpCount == State.Record.Times)
+            if (tcpCount == State.Record.Times && udpCount == State.Record.Times && routeCount > 0)
             {
                 aTimer.Stop();
                 aTimer.Dispose();
@@ -91,31 +132,36 @@ namespace GreatEchoWall.Views
             var tcp = State.TcpSocket;
             var udp = State.UdpSocket;
             var record = State.Record;
+            long now = 0;
             if (tcp != null)
             {
                 tcp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Tcp");
-                record.TcpConnectStart = DateTime.Now;
+                QueryPerformanceCounter(ref now);
+                record.TcpConnectStart = now;
             }
             if (udp != null)
             {
                 udp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Udp");
-                record.UdpConnectStart = DateTime.Now;
+                QueryPerformanceCounter(ref now);
+                record.UdpConnectStart = now;
             }
         }
 
         private void ConnectOver(IAsyncResult ar)
         {
-            var now = DateTime.Now;
+            long now = 0;
             var record = State.Record;
             Socket socket;
             if (ar.AsyncState as string == "Tcp")
             {
                 socket = State.TcpSocket;
+                QueryPerformanceCounter(ref now);
                 record.TcpConnectEnd = now;
             }
             else
             {
                 socket = State.UdpSocket;
+                QueryPerformanceCounter(ref now);
                 record.UdpConnectEnd = now;
             }
             record.LocalEndPoint = socket.LocalEndPoint as IPEndPoint;
@@ -147,6 +193,8 @@ namespace GreatEchoWall.Views
             }
 
             var recvBuff = new byte[1048576];
+
+            long now = 0;
             
             for (int i = 0; i < record.Times; i++)
             {
@@ -154,11 +202,14 @@ namespace GreatEchoWall.Views
                 try
                 {
                     var sendBuff = Encoding.UTF8.GetBytes(record.Content);
-                    moment.SendStart = DateTime.Now;
+                    QueryPerformanceCounter(ref now);
+                    moment.SendStart = now;
                     socket.Send(sendBuff);
-                    moment.SendEnd = DateTime.Now;
+                    QueryPerformanceCounter(ref now);
+                    moment.SendEnd = now;
                     var length = socket.Receive(recvBuff);
-                    moment.RecvEnd = DateTime.Now;
+                    QueryPerformanceCounter(ref now);
+                    moment.RecvEnd = now;
                     var res = Encoding.UTF8.GetString(recvBuff, 0, length);
                     var moments = (protocol == "Tcp" ? record.TcpMoments : record.UdpMoments);
                     moments[i] = moment;
@@ -168,12 +219,26 @@ namespace GreatEchoWall.Views
                     Console.WriteLine(ee.Message);
                 }
             }
-            record.TcpCloseStart = DateTime.Now;
-            socket.Close();
-            record.TcpConnectEnd = DateTime.Now;
+
+            if (protocol == "Tcp")
+            {
+                QueryPerformanceCounter(ref now);
+                record.TcpCloseStart = now;
+                socket.Close();
+                QueryPerformanceCounter(ref now);
+                record.TcpConnectEnd = now;
+            }
+            else
+            {
+                QueryPerformanceCounter(ref now);
+                record.UdpCloseStart = now;
+                socket.Close();
+                QueryPerformanceCounter(ref now);
+                record.UdpConnectEnd = now;
+            } 
         }
 
-        private void UpdatePoint(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage)
+        private void UpdatePoint(string protocol, IEnumerable<KeyValuePair<int, long>> tcpPoints, IEnumerable<KeyValuePair<int, long>> udpPoints, int tcpIndex, int udpIndex, double tcpAverage, double udpAverage, int routeCount, string routeLog)
         {
             lineChart.DataContext = new
             {
@@ -184,6 +249,7 @@ namespace GreatEchoWall.Views
             udpIndexBlock.Text = udpIndex.ToString();
             tcpAverageBlock.Text = tcpAverage.ToString("f2");
             udpAverageBlock.Text = udpAverage.ToString("f2");
+            routeBlock.Text = routeLog;
         }
 
         private void InitializeDataContext()
@@ -193,6 +259,22 @@ namespace GreatEchoWall.Views
                 TCP = new List<KeyValuePair<int, long>>(),
                 UDP = new List<KeyValuePair<int, long>>(),
             };
+        }
+
+        private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            aTimer.Dispose();
+            State.TcpSocket.Dispose();
+            State.UdpSocket.Dispose();
+            try
+            {
+                routeProcess.Kill();
+                routeProcess.Dispose();
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
         }
     }
 }

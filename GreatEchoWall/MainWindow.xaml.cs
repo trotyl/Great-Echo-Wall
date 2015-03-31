@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,10 +29,18 @@ namespace GreatEchoWall
     public partial class MainWindow : Window
     {
         private Counting counting;
+        private long Frequency;
+
+        [DllImport("kernel32.dll")]
+        private extern static bool QueryPerformanceFrequency(ref long x);
 
         public MainWindow()
         {
             InitializeComponent();
+
+            long freq = -1;
+            QueryPerformanceFrequency(ref freq);
+            Frequency = freq;
         }
 
         private void TextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -126,6 +135,7 @@ namespace GreatEchoWall
                     UdpMoments = new Moment[times],
                     Time = DateTime.Now,
                     Times = times,
+                    Frequency = Frequency,
                 }
             };
 
@@ -144,29 +154,13 @@ namespace GreatEchoWall
             counting = new Counting();
             counting.State = state;
             counting.Show();
-            Thread bg = new Thread(counting.Start);
-            bg.Start();
+            Thread chartThread = new Thread(counting.Start);
+            chartThread.IsBackground = true;
+            chartThread.Start();
 
-            //ProcessStartInfo start = new ProcessStartInfo("Tracert.exe");
-            //start.Arguments = serverIpBox.Text;
-            //start.CreateNoWindow = true;
-            //start.RedirectStandardOutput = true;
-            //start.RedirectStandardInput = true;
-            //start.UseShellExecute = false;
-            //Process p = Process.Start(start);
-            //StreamReader reader = p.StandardOutput;
-            //string line;
-            //while (!reader.EndOfStream)
-            //{
-            //    line = reader.ReadLine();
-            //    state.Record.RouteCount += 1;
-            //    state.Record.RouteLog += line + "\n";
-            //}
-            //state.Record.RouteCount -= 6;
-            //Console.WriteLine(state.Record.RouteLog);
-            //p.WaitForExit();
-            //p.Close();
-            //reader.Close();
+            Thread routeThread = new Thread(counting.Route);
+            routeThread.IsBackground = true;
+            routeThread.Start();
         }
 
         private void resetButton_Click(object sender, RoutedEventArgs e)

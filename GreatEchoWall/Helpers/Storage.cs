@@ -23,6 +23,7 @@ namespace GreatEchoWall.Helpers
                 Time = record.Time,
                 Content = record.Content,
                 Times = record.Times,
+                Frequency = record.Frequency,
                 Server = new EndPoint {
                     Ip = record.RemoteEndPoint.Address.ToString(),
                     Port = record.RemoteEndPoint.Port,
@@ -59,11 +60,18 @@ namespace GreatEchoWall.Helpers
             var json = JsonConvert.SerializeObject(log, Formatting.Indented);
             var data = Encoding.UTF8.GetBytes(json);
             var filename = log.Time.ToString("yyyyMMddHHmmss") + "#" + log.Name + ".json";
-            using (var fs = new FileStream("/GEW/SingleRecord/" + filename, FileMode.Create))
+            try
             {
-                fs.Write(data, 0, data.Length);
-                fs.Flush();
-                fs.Close();
+                using (var fs = new FileStream("/GEW/SingleRecord/" + filename, FileMode.Create))
+                {
+                    fs.Write(data, 0, data.Length);
+                    fs.Flush();
+                    fs.Close();
+                }
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
             }
         }
 
@@ -78,6 +86,7 @@ namespace GreatEchoWall.Helpers
             public DateTime Time { get; set; }
             public string Content { get; set; }
             public int Times { get; set; }
+            public long Frequency { get; set; }
             public EndPoint Server { get; set; }
             public EndPoint Client { get; set; }
             public Route Route { get; set; }
@@ -104,10 +113,10 @@ namespace GreatEchoWall.Helpers
 
         class Timetable
         {
-            public DateTime ConnectStart { get; set; }
-            public DateTime ConnectEnd { get; set; }
-            public DateTime CloseStart { get; set; }
-            public DateTime CloseEnd { get; set; }
+            public long ConnectStart { get; set; }
+            public long ConnectEnd { get; set; }
+            public long CloseStart { get; set; }
+            public long CloseEnd { get; set; }
             public List<Moment> List { get; set; }
         }
     }

@@ -8,8 +8,8 @@ namespace GreatEchoWall.Models
 {
     public class Moment
     {
-        public DateTime SendStart { get; set; }
-        public DateTime SendEnd { get; set; }
-        public DateTime RecvEnd { get; set; }
+        public long SendStart { get; set; }
+        public long SendEnd { get; set; }
+        public long RecvEnd { get; set; }
     }
 }
