@@ -263,9 +263,14 @@ namespace GreatEchoWall.Views
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            aTimer.Dispose();
-            State.TcpSocket.Dispose();
-            State.UdpSocket.Dispose();
+            try
+            {
+                aTimer.Dispose();
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
             try
             {
                 routeProcess.Kill();

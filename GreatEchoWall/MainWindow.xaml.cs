@@ -29,6 +29,7 @@ namespace GreatEchoWall
     public partial class MainWindow : Window
     {
         private long frequency;
+        private int max;
         private Thread tcpServer;
         private Thread udpServer;
 
@@ -200,13 +201,12 @@ namespace GreatEchoWall
                 return;
             }
 
-            if (!(tcpBox.IsChecked ?? false) && !(udpBox.IsChecked ?? false))
+            if (!(sTcpBox.IsChecked ?? false) && !(sUdpBox.IsChecked ?? false))
             {
                 MessageBox.Show("未选择协议类型！");
                 return;
             }
 
-            int max;
             if (!int.TryParse(sMaxBox.Text, out max) || max <= 0 || max >= 1000)
             {
                 MessageBox.Show("传输次数（" + sMaxBox.Text + "）非法！");
@@ -215,24 +215,33 @@ namespace GreatEchoWall
 
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
 
-            if (tcpBox.IsChecked ?? false)
+            try
             {
-                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.Bind(endPoint);
-                tcpServer = new Thread(StartServer);
-                tcpServer.IsBackground = true;
-                tcpServer.Start(socket);
-            }
-            if (udpBox.IsChecked ?? false)
-            {
-                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                socket.Bind(endPoint);
-                udpServer = new Thread(StartServer);
-                udpServer.IsBackground = true;
-                udpServer.Start(socket);
-            }
+                if (sTcpBox.IsChecked ?? false)
+                {
+                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    socket.Bind(endPoint);
+                    tcpServer = new Thread(StartServer);
+                    tcpServer.IsBackground = true;
+                    tcpServer.Start(socket);
+                }
+                if (sUdpBox.IsChecked ?? false)
+                {
+                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    socket.Bind(endPoint);
+                    udpServer = new Thread(StartServer);
+                    udpServer.IsBackground = true;
+                    udpServer.Start(socket);
+                }
 
-            sStateBox.Text = "已开启";
+                sStateBox0.Visibility = System.Windows.Visibility.Collapsed;
+                sStateBox1.Visibility = System.Windows.Visibility.Visible;
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
+            
         }
 
         private void sStopButton_Click(object sender, RoutedEventArgs e)
@@ -255,12 +264,36 @@ namespace GreatEchoWall
                 Console.WriteLine(ee.Message);
             }
 
-            sStateBox.Text = "未开启";
+            sStateBox0.Visibility = System.Windows.Visibility.Visible;
+            sStateBox1.Visibility = System.Windows.Visibility.Collapsed;
         }
 
-        private void StartServer(object socket)
+        private void StartServer(object socketObject)
         {
-            throw new NotImplementedException();
+            var socket = socketObject as Socket;
+            socket.Listen(5);
+            socket.BeginAccept(AcceptOver, socket);
+        }
+
+        private void AcceptOver(IAsyncResult ar)
+        {
+            var socket = ar.AsyncState as Socket;
+            Socket newSocket;
+            try
+            {
+                newSocket = socket.EndAccept(ar);
+                var buff = new byte[16384];
+                var len = 1;
+                while (len > 0)
+                {
+                    len = newSocket.Receive(buff);
+                    newSocket.Send(buff, 0, len, SocketFlags.None);
+                }
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine(ee.Message);
+            }
         }
         
     }

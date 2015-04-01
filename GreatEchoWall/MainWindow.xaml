@@ -23,7 +23,7 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,5,10,0">
                                     <Label Content="服务器端口号：" Margin="0" />
-                                    <TextBox x:Name="sPortBox" Width="42" Text="7" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
+                                    <TextBox x:Name="sPortBox" Width="42" Text="5683" GotFocus="TextBox_GotFocus" PreviewMouseDown="TextBox_PreviewMouseDown" LostFocus="TextBox_LostFocus" TextAlignment="Center" Padding="0,4,0,0" MaxLength="5" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,5,10,0">
                                     <Label Content="协议类型：" Margin="0" />
@@ -37,11 +37,12 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,5,10,0">
                                     <Label Content="服务器状态：" Margin="0" />
-                                    <TextBox x:Name="sStateBox" Width="100" Text="未开启" TextAlignment="Center" Padding="0,4,0,0" MaxLength="15" IsEnabled="False" />
+                                    <TextBlock x:Name="sStateBox0" Width="100" Text="未开启" Padding="0,5,0,0" Foreground="Red" />
+                                    <TextBlock x:Name="sStateBox1" Width="100" Text="已开启" Padding="0,5,0,0" Foreground="Green" Visibility="Collapsed" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,20,10,0" Height="32">
                                     <Button x:Name="sStartButton" Content="开启" Width="75" Margin="10,0,0,0" Click="sStartButton_Click"/>
-                                    <Button x:Name="sStopButton" Content="停止" Width="75" Margin="10,0,0,0" Click="sStopButton_Click"/>
+                                    <Button x:Name="sStopButton" Content="停止" Width="75" Margin="10,0,0,0" Click="sStopButton_Click" IsEnabled="False"/>
                                 </StackPanel>
                             </StackPanel>
                            
