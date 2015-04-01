@@ -15,10 +15,14 @@ namespace GreatEchoWall.Models
         public int Length { get; set; }
         public int Times { get; set; }
         public long Frequency { get; set; }
-        public IPEndPoint LocalEndPoint { get; set; }
-        public IPEndPoint RemoteEndPoint { get; set; }
+        public string LocalAddress { get; set; }
+        public string RemoteAddress { get; set; }
+        public int LocalPort { get; set; }
+        public int RemotePort { get; set; }
         public int RouteCount { get; set; }
         public string RouteLog { get; set; }
+        public bool IsTcpEnabled { get; set; }
+        public bool IsUdpEnabled { get; set; }
         public long TcpConnectStart { get; set; }
         public long TcpConnectEnd { get; set; }
         public long TcpCloseStart { get; set; }

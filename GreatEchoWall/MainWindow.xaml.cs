@@ -30,6 +30,8 @@ namespace GreatEchoWall
     {
         private long frequency;
         private int max;
+        private Socket tcpSocket;
+        private Socket udpSocket;
         private Thread tcpServer;
         private Thread udpServer;
 
@@ -143,7 +145,8 @@ namespace GreatEchoWall
                     Content = message,
                     Length = length,
                     Name = name,
-                    RemoteEndPoint = remoteEndPoint,
+                    RemoteAddress = remoteEndPoint.Address.ToString(),
+                    RemotePort = remoteEndPoint.Port,
                     RouteCount = 0,
                     RouteLog = "",
                     TcpMoments = new Moment[times],
@@ -219,82 +222,123 @@ namespace GreatEchoWall
             {
                 if (sTcpBox.IsChecked ?? false)
                 {
-                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    socket.Bind(endPoint);
-                    tcpServer = new Thread(StartServer);
+                    tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    tcpSocket.Bind(endPoint);
+                    tcpServer = new Thread(StartServerTcp);
                     tcpServer.IsBackground = true;
-                    tcpServer.Start(socket);
+                    tcpServer.Start(tcpSocket);
                 }
                 if (sUdpBox.IsChecked ?? false)
                 {
-                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                    socket.Bind(endPoint);
-                    udpServer = new Thread(StartServer);
+                    udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    udpSocket.Bind(endPoint);
+                    udpServer = new Thread(StartServerUdp);
                     udpServer.IsBackground = true;
-                    udpServer.Start(socket);
+                    udpServer.Start(udpSocket);
                 }
 
                 sStateBox0.Visibility = System.Windows.Visibility.Collapsed;
                 sStateBox1.Visibility = System.Windows.Visibility.Visible;
+                sStartButton.IsEnabled = false;
+                sStopButton.IsEnabled = true;
             }
             catch (Exception ee)
             {
-                MessageBox.Show(ee.Message);
+                MessageBox.Show("242" + ee.Message);
             }
-            
+
         }
 
         private void sStopButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                tcpSocket.Close();
                 tcpServer.Abort();
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("255" + ee.Message);
             }
 
             try
             {
+                udpSocket.Close();
                 udpServer.Abort();
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("264" + ee.Message);
             }
 
             sStateBox0.Visibility = System.Windows.Visibility.Visible;
             sStateBox1.Visibility = System.Windows.Visibility.Collapsed;
+            sStartButton.IsEnabled = true;
+            sStopButton.IsEnabled = false;
         }
 
-        private void StartServer(object socketObject)
+        private void StartServerTcp(object socketObject)
         {
             var socket = socketObject as Socket;
-            socket.Listen(5);
-            socket.BeginAccept(AcceptOver, socket);
-        }
-
-        private void AcceptOver(IAsyncResult ar)
-        {
-            var socket = ar.AsyncState as Socket;
-            Socket newSocket;
             try
             {
-                newSocket = socket.EndAccept(ar);
-                var buff = new byte[16384];
-                var len = 1;
-                while (len > 0)
+                socket.Listen(max);
+                Console.WriteLine("new 16384 bytes at 287");
+                while (true)
                 {
-                    len = newSocket.Receive(buff);
-                    newSocket.Send(buff, 0, len, SocketFlags.None);
+                    var newSocket = socket.Accept();
+                    var thread = new Thread(ReceiveOver);
+                    thread.IsBackground = true;
+                    thread.Start(newSocket);
                 }
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                socket.Close();
+                Console.WriteLine("285" + ee.Message);
             }
         }
-        
+
+        private void ReceiveOver(object obj)
+        {
+            var socket = obj as Socket;
+            try
+            {
+                var buff = new byte[16384];
+                var len = 1;
+                while (len > 0)
+                {
+
+                    len = socket.Receive(buff);
+                    socket.Send(buff, 0, len, SocketFlags.None);
+
+                }
+            }
+            catch (Exception ee)
+            {
+                Console.WriteLine("316" + ee.Message);
+            }
+        }
+
+        private void StartServerUdp(object socketObject)
+        {
+            var socket = socketObject as Socket;
+            try
+            {
+                EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+                var buff = new byte[16384];
+                Console.WriteLine("new 16384 bytes at 300");
+                var len = 1;
+                while (len > 0)
+                {
+                    len = socket.ReceiveFrom(buff, ref ep);
+                    socket.SendTo(buff, 0, len, SocketFlags.None, ep);
+                }
+            }
+            catch (Exception eee)
+            {
+                Console.WriteLine("295" + eee.Message);
+            }
+        }
     }
 }

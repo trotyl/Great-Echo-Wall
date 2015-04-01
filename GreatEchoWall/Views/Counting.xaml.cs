@@ -48,7 +48,7 @@ namespace GreatEchoWall.Views
         public void Route()
         {
             ProcessStartInfo start = new ProcessStartInfo("Tracert.exe");
-            start.Arguments = State.Record.RemoteEndPoint.Address.ToString();
+            start.Arguments = State.Record.RemoteAddress;
             start.CreateNoWindow = true;
             start.RedirectStandardOutput = true;
             start.RedirectStandardInput = true;
@@ -71,7 +71,7 @@ namespace GreatEchoWall.Views
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("074" + ee.Message);
             }
         }
 
@@ -135,13 +135,13 @@ namespace GreatEchoWall.Views
             long now = 0;
             if (tcp != null)
             {
-                tcp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Tcp");
+                tcp.BeginConnect(record.RemoteAddress, record.RemotePort, ConnectOver, "Tcp");
                 QueryPerformanceCounter(ref now);
                 record.TcpConnectStart = now;
             }
             if (udp != null)
             {
-                udp.BeginConnect(record.RemoteEndPoint, ConnectOver, "Udp");
+                udp.BeginConnect(record.RemoteAddress, record.RemotePort, ConnectOver, "Udp");
                 QueryPerformanceCounter(ref now);
                 record.UdpConnectStart = now;
             }
@@ -164,7 +164,9 @@ namespace GreatEchoWall.Views
                 QueryPerformanceCounter(ref now);
                 record.UdpConnectEnd = now;
             }
-            record.LocalEndPoint = socket.LocalEndPoint as IPEndPoint;
+            var endPoint = socket.LocalEndPoint as IPEndPoint;
+            record.LocalAddress = endPoint.Address.ToString();
+            record.LocalPort = endPoint.Port;
 
             try
             {
@@ -172,7 +174,7 @@ namespace GreatEchoWall.Views
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("177" + ee.Message);
                 socket.Close();
                 return;
             }
@@ -192,7 +194,8 @@ namespace GreatEchoWall.Views
                 socket = State.UdpSocket;
             }
 
-            var recvBuff = new byte[1048576];
+            var recvBuff = new byte[16364];
+            Console.WriteLine("new 16384 bytes at 198");
 
             long now = 0;
             
@@ -216,7 +219,7 @@ namespace GreatEchoWall.Views
                 }
                 catch (Exception ee)
                 {
-                    Console.WriteLine(ee.Message);
+                    Console.WriteLine("221" + ee.Message);
                 }
             }
 
@@ -269,7 +272,7 @@ namespace GreatEchoWall.Views
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("274" + ee.Message);
             }
             try
             {
@@ -278,7 +281,7 @@ namespace GreatEchoWall.Views
             }
             catch (Exception ee)
             {
-                Console.WriteLine(ee.Message);
+                Console.WriteLine("283" + ee.Message);
             }
         }
     }

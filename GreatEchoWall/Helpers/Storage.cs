@@ -25,12 +25,12 @@ namespace GreatEchoWall.Helpers
                 Times = record.Times,
                 Frequency = record.Frequency,
                 Server = new EndPoint {
-                    Ip = record.RemoteEndPoint.Address.ToString(),
-                    Port = record.RemoteEndPoint.Port,
+                    Ip = record.RemoteAddress,
+                    Port = record.RemotePort,
                 },
                 Client = new EndPoint {
-                    Ip = record.LocalEndPoint.Address.ToString(),
-                    Port = record.LocalEndPoint.Port,
+                    Ip = record.LocalAddress,
+                    Port = record.LocalPort,
                 },
                 Route = new Route
                 {
