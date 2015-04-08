@@ -1,4 +1,5 @@
-﻿using GreatEchoWall.Models;
+﻿using ExcelBuilder;
+using GreatEchoWall.Models;
 using GreatEchoWall.Views;
 using System;
 using System.Collections.Generic;
@@ -87,9 +88,18 @@ namespace GreatEchoWall
             Console.WriteLine(DateTime.Now.Ticks + " Test Start!");
 
             IPAddress remoteAddress;
-            if (!IPAddress.TryParse(serverIpBox.Text, out remoteAddress))
+            try
             {
-                MessageBox.Show("服务器IP地址（" + serverIpBox.Text + "）不是有效的IP地址！");
+                var ips = Dns.GetHostAddresses(serverIpBox.Text);
+                if (ips.Length == 0)
+                {
+                    throw new Exception("未找到该域名或地址");
+                }
+                remoteAddress = ips[0];
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("服务器IP地址或域名（" + serverIpBox.Text + "）无效！");
                 return;
             }
 
@@ -127,7 +137,7 @@ namespace GreatEchoWall
             }
             else
             {
-                if (!int.TryParse(lengthBox.Text, out length) || length <= 0 || length >= 1048576)
+                if (!int.TryParse(lengthBox.Text, out length) || length <= 0 || length >= 1368)
                 {
                     MessageBox.Show("随机内容长度（" + lengthBox.Text + "）非法！");
                     return;
@@ -313,10 +323,12 @@ namespace GreatEchoWall
                     socket.Send(buff, 0, len, SocketFlags.None);
 
                 }
+                socket.Close();
             }
             catch (Exception ee)
             {
                 Console.WriteLine("316" + ee.Message);
+                socket.Close();
             }
         }
 
@@ -334,10 +346,12 @@ namespace GreatEchoWall
                     len = socket.ReceiveFrom(buff, ref ep);
                     socket.SendTo(buff, 0, len, SocketFlags.None, ep);
                 }
+                socket.Close();
             }
             catch (Exception eee)
             {
                 Console.WriteLine("295" + eee.Message);
+                socket.Close();
             }
         }
     }

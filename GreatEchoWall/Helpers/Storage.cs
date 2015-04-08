@@ -75,11 +75,6 @@ namespace GreatEchoWall.Helpers
             }
         }
 
-        public static void save(IEnumerable<Record> records)
-        {
-
-        }
-
         class Log
         {
             public string Name { get; set; }

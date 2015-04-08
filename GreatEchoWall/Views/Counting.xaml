@@ -33,6 +33,7 @@
                 <TextBlock x:Name="udpAverageBlock" TextWrapping="NoWrap" Text="0" Padding="0,5,0,0"/>
                 <Label Content="（μs）" Margin="10,0,0,0" />
             </StackPanel>
+            <Button x:Name="exportButton" Content="导出" Height="20" Width="40" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Click="exportButton_Click" />
         </Grid>
     </Grid>
 </Window>

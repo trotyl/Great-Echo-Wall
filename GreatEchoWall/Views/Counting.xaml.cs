@@ -1,4 +1,5 @@
-﻿using GreatEchoWall.Helpers;
+﻿using ExcelBuilder;
+using GreatEchoWall.Helpers;
 using GreatEchoWall.Models;
 using System;
 using System.Collections.Generic;
@@ -283,6 +284,52 @@ namespace GreatEchoWall.Views
             {
                 Console.WriteLine("283" + ee.Message);
             }
+        }
+
+        private void exportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var builder = new Builder();
+
+            var values = new List<List<dynamic>>
+            {
+                new List<dynamic> { "名称", State.Record.Name },
+                new List<dynamic> { "时间", State.Record.Time },
+                new List<dynamic> { "内容", State.Record.Content },
+                new List<dynamic> { "长度", State.Record.Length },
+                new List<dynamic> { "次数", State.Record.Times },
+                new List<dynamic> { "时钟频率", State.Record.Frequency },
+                new List<dynamic> { "远程主机地址", State.Record.RemoteAddress },
+                new List<dynamic> { "远程主机端口", State.Record.RemotePort },
+                new List<dynamic> { "本地主机地址", State.Record.LocalAddress },
+                new List<dynamic> { "本地主机端口", State.Record.LocalPort },
+                new List<dynamic> { "路由跳数", State.Record.RouteCount },
+                new List<dynamic> { "路由日志", State.Record.RouteLog },
+                new List<dynamic> { "路由跳数", State.Record.RouteCount },
+                new List<dynamic> { "TCP连接开始计数", State.Record.TcpConnectStart },
+                new List<dynamic> { "TCP连接结束计数", State.Record.TcpConnectStart },
+                new List<dynamic> { "TCP关闭开始计数", State.Record.TcpConnectStart },
+                new List<dynamic> { "TCP关闭结束计数", State.Record.TcpConnectStart },
+                new List<dynamic> { "UDP连接开始计数", State.Record.UdpConnectStart },
+                new List<dynamic> { "UDP连接结束计数", State.Record.UdpConnectStart },
+                new List<dynamic> { "UDP关闭开始计数", State.Record.UdpConnectStart },
+                new List<dynamic> { "UDP关闭结束计数", State.Record.UdpConnectStart },
+                new List<dynamic> { "TCP发送接收计数" },
+            };
+
+            foreach (var moment in State.Record.TcpMoments)
+            {
+                values.Add(new List<dynamic> { moment.SendStart, moment.SendEnd, moment.RecvEnd });
+            }
+
+            values.Add(new List<dynamic> { "UDP发送接收计数" });
+
+            foreach (var moment in State.Record.TcpMoments)
+            {
+                values.Add(new List<dynamic> { moment.SendStart, moment.SendEnd, moment.RecvEnd });
+            }
+            
+            builder.AddSheet(values);
+            builder.Save(State.Record.Time.ToString("yyyyMMddHHmmss") + "#" + State.Record.Name);
         }
     }
 }
