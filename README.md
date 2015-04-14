@@ -33,5 +33,5 @@ C# >=4.0|WPF|VS2013
 ##相关内容
 
 + [展示PPT](https://github.com/trotyl/GreatEchoWall/tree/master/Docnments/GEW_Embedded.pptx)
-+ [宣讲稿](https://github.com/trotyl/GreatEchoWall/tree/master/Documents/GEW_Draft.dicx)
++ [宣讲稿](https://github.com/trotyl/GreatEchoWall/tree/master/Documents/GEW_Draft.docx)
 
